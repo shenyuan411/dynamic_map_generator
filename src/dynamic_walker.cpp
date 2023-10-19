@@ -97,7 +97,7 @@ visualization_msgs::MarkerArray circle_vis;
 visualization_msgs::Marker      circle_mk;
 visualization_msgs::MarkerArray obstacle_state_list;
 visualization_msgs::Marker      obstacle_state;
-geometry_msgs::PoseWithCovarianceStamped walker_pose;
+geometry_msgs::PoseStamped walker_pose;
 
 std::vector<dynamic_map_objects::MovingCylinder> _dyn_cylinders;
 std::vector<dynamic_map_objects::MovingCircle>   _dyn_circles;
@@ -255,8 +255,8 @@ void pubSensedPoints() {
   _cylinder_state_pub.publish(obstacle_state_list);// 其实这个里面好像也有发布障碍物位置信息
 
   // publish walker position
-  walker_pose.pose.pose.position.x = _dyn_cylinders[0].x;
-  walker_pose.pose.pose.position.y = _dyn_cylinders[0].y;
+  walker_pose.pose.position.x = _dyn_cylinders[0].x;
+  walker_pose.pose.position.y = _dyn_cylinders[0].y;
   _obs1_pose_pub.publish(walker_pose);
   return;
 }
@@ -288,7 +288,7 @@ int main(int argc, char** argv) {
       n.advertise<visualization_msgs::MarkerArray>("global_cylinders_vis", 1);
   _cylinder_state_pub = n.advertise<visualization_msgs::MarkerArray>("global_cylinder_state", 1);
 
-  _obs1_pose_pub = n.advertise<geometry_msgs::PoseWithCovarianceStamped>("gazebo_actor1_pos",1);
+  _obs1_pose_pub = n.advertise<geometry_msgs::PoseStamped>("gazebo_actor1_pos",1);
 //   ros::Subscriber obs1_pose_sub =n.subscribe<geometry_msgs::PoseWithCovarianceStamped>("/gazebo_actor1_pos", 100, obs1_pose_set_callback);
   //ros::Subscriber obs2_pose_sub =n.subscribe<geometry_msgs::PoseStamped>("/vrpn_client_node/obstacle2/pose", 100, obs2_pose_set_callback);
   //ros::Subscriber obs3_pose_sub =n.subscribe<geometry_msgs::PoseStamped>("/vrpn_client_node/obstacle3/pose", 100, obs3_pose_set_callback);
