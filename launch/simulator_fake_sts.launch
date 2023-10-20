@@ -13,6 +13,7 @@
 	<arg name="odometry_topic" />
 	<arg name="odom_pose_topic" />
 	<arg name="drone_id" />
+	<arg name="given_vel" default="0.06"/>
 
 	<!-- map -->
 	<node pkg ="map_generator" name ="map_generator" type ="dynamic_walker" output = "screen">
@@ -53,6 +54,7 @@
 		<param name="obs3x" value="1.0"/>
 		<param name="obs3y" value="-1.5"/>
 		<param name="obs3w" value="1.4"/>
+		<param name="given_vel" value="$(arg given_vel)"/>
 
 
 	</node>

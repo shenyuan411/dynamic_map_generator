@@ -80,6 +80,7 @@ bool _test_mode    = false;
  * 2: randomize vy, vx = 0
  */
 int _mode = 0;
+double _given_vel = 0.0;
 
 /* map sequence settings */
 bool   _future_map = false;
@@ -139,7 +140,8 @@ void RandomMapGenerate() {
     dynamic_map_objects::MovingCylinder cylinder(_x_l, _x_h, _y_l, _y_h, _w_l, _w_h, _h_l, _h_h,
                                                  _v_h, eng, _resolution, obs_x, obs_y, obs_w);
     if(i==0){
-      cylinder.setMode(_mode);
+      cylinder.setVel(_given_vel);// 设置是否使用随机速度
+      cylinder.setMode(_mode);// 设置速度方向是xy都有还是各自有还是完全静止
     }else{
       cylinder.setMode(3);
     }
@@ -337,6 +339,7 @@ int main(int argc, char** argv) {
   n.param("obs3y", obs3y, 0.0);
   n.param("obs3w", obs3w, 0.0);
   n.param("mode", _mode, 0);
+  n.param("given_vel", _given_vel, 0.0);
 
   _x_l = -_x_size / 2.0;
   _x_h = +_x_size / 2.0;

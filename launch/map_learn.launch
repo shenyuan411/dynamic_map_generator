@@ -15,8 +15,20 @@
     <arg name="obs_num" value="$(arg obs_num)" />
   </include>
 
+  <include file="$(find offboard_ctl_test)/launch/simulator/drone_fake.xml">
+    <arg name="map_size_x" value="$(arg map_size_x)" />
+    <arg name="map_size_y" value="$(arg map_size_y)" />
+    <arg name="map_size_z" value="$(arg map_size_z)" />
+    <arg name="init_x" value="-5" />
+    <arg name="init_y" value="0" />
+    <arg name="init_z" value="1" />
+  </include>
+
+
+
+
   <group if="$(arg rviz)">
-    <node pkg="rviz" name="rviz" type="rviz" args="-d $(find map_generator)/config/demo.rviz" />
+    <node pkg="rviz" name="fake_world_rviz" type="rviz" args="-d $(find map_generator)/config/sts_insteadof_gazebo.rviz" />
   </group>
 
 </launch>

@@ -53,6 +53,7 @@ class MovingCylinder {
                  double                      obs_w);
   ~MovingCylinder() {}
   void setMode(int m);
+  void setVel(double vel);
   // void update(double obs_x, double obs_y);
   void update();
 };
@@ -142,6 +143,14 @@ void MovingCylinder::setMode(int m) {
     vx = 0;
     vy = 0;
   }
+}
+
+void MovingCylinder::setVel(double vel) {
+  if (vel > 0) {
+    vx = vel;
+    vy = vel;
+  }
+  // 如果vel小于0则不覆盖速度，依然使用随机速度
 }
 
 // void MovingCylinder::update(double obs_x, double obs_y) {
