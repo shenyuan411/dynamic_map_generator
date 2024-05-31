@@ -27,7 +27,9 @@ class MovingCylinder {
   std::uniform_real_distribution<double> _rand_x, _rand_y, _rand_w, _rand_h, _rand_v;
   double                                 _x_l, _x_h, _y_l, _y_h, _w_l, _w_h, _h_l, _h_h, _v_h;
   double                                 _resolution;
-  int                                    _mode = 0;
+  int _mode = 0;
+  bool _low_speed_for_turn_x = false;
+  bool _low_speed_for_turn_y = false;
 
  public:
   pcl::PointCloud<pcl::PointXYZ> _cloud;
@@ -52,8 +54,9 @@ class MovingCylinder {
                  double                      obs_y,
                  double                      obs_w);
   ~MovingCylinder() {}
-  void setMode(int m);
-  void setVel(double vel);
+  void setVelMode(int m);
+  int getVelMode();
+  void setVel(const std::vector<double>& vel);
   // void update(double obs_x, double obs_y);
   void update();
 };
@@ -91,8 +94,10 @@ MovingCylinder::MovingCylinder(double                      x_l,
   // genrate random 2D position, width, height
   x = obs_x;
   y = obs_y;
-  h = 5.000;
+  h = 1.8;
   w = obs_w;
+  _low_speed_for_turn_x = false;
+  _low_speed_for_turn_y = false;
 
   // generate random veocity
   vx = _rand_v(eng);// 这里可以指定速度大小
@@ -131,24 +136,30 @@ MovingCylinder::MovingCylinder(double                      x_l,
   _cloud.is_dense = true;
 };  // namespace dynamic_map_objects
 
-void MovingCylinder::setMode(int m) {
+void MovingCylinder::setVelMode(int m) {
   // generate random veocity
+  _mode = m;
   if (m == 0) {
-    ;
+	// xy都按照速度运动
   } else if (m == 1) {
     vy = 0;
   } else if (m == 2) {
     vx = 0;
   } else {
+    // 静止的
     vx = 0;
     vy = 0;
   }
 }
 
-void MovingCylinder::setVel(double vel) {
-  if (vel > 0) {
-    vx = vel;
-    vy = vel;
+int MovingCylinder::getVelMode() {
+  return this->_mode;
+}
+
+void MovingCylinder::setVel(const std::vector<double>& vel) {
+  if (vel[0] > 0) {
+    vx = vel[0];
+    vy = vel[1];
   }
   // 如果vel小于0则不覆盖速度，依然使用随机速度
 }
@@ -168,9 +179,30 @@ void MovingCylinder::update() {
   Eigen::Affine3f transform = Eigen::Affine3f::Identity();
   transform.translation() << vx, vy, 0;
   pcl::transformPointCloud(_cloud, _cloud, transform);
+  double dist_ready_to_low = 0.1;
+
+  if (!_low_speed_for_turn_x && (x - _x_l < dist_ready_to_low || _x_h - x < dist_ready_to_low)) {
+    vx *= 0.25;
+    _low_speed_for_turn_x = true;
+  }
+
+  if (_low_speed_for_turn_x && (x - _x_l > dist_ready_to_low && _x_h - x > dist_ready_to_low)) {
+    vx *= 4;
+    _low_speed_for_turn_x = false;
+  }
 
   if (x < _x_l || x > _x_h) {
     vx = -vx;
+  }
+
+  if (!_low_speed_for_turn_y && (y - _y_l < dist_ready_to_low || _y_h - y < dist_ready_to_low)) {
+    vy *= 0.25;
+    _low_speed_for_turn_y= true;
+  }
+
+  if (_low_speed_for_turn_y && (y - _y_l > dist_ready_to_low && _y_h - y > dist_ready_to_low)) {
+    vy *= 4;
+    _low_speed_for_turn_y = false;
   }
 
   if (y < _y_l || y > _y_h) {

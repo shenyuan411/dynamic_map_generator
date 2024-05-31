@@ -66,7 +66,7 @@ double      _x_size, _y_size, _z_size;
 double      _x_l, _x_h, _y_l, _y_h, _w_l, _w_h, _h_l, _h_h, _v_h, _dr;
 double      _radius_h, _radius_l, _z_l, _z_h, _theta, _omega_h;
 double      _z_limit, _sensing_range, _resolution, _sense_rate, _init_x, _init_y;
-double      obs_x, obs_y, obs_w, obs1x, obs1y, obs1w, obs2x, obs2y, obs2w, obs3x, obs3y, obs3w;
+double      obs_x, obs_y, obs_w, obs1x, obs1y, obs1w, obs2x, obs2y, obs2w, obs3x, obs3y, obs3w, obs4x, obs4y, obs4w, obs5x, obs5y, obs5w;
 std::string _frame_id;
 
 bool _map_ok       = false;
@@ -79,8 +79,12 @@ bool _test_mode    = false;
  * 1: randomize vx, vy = 0
  * 2: randomize vy, vx = 0
  */
-int _mode = 0;
-double _given_vel = 0.0;
+int _mode1 = 0;
+int _mode4 = 0;
+int _mode5 = 0;
+std::vector<double> _given_vel1 = {0.0, 0.0};
+std::vector<double> _given_vel4 = {0.0, 0.0};
+std::vector<double> _given_vel5 = {0.0, 0.0};
 
 /* map sequence settings */
 bool   _future_map = false;
@@ -136,14 +140,30 @@ void RandomMapGenerate() {
       obs_y = obs3y;
       obs_w = obs3w;
     }
+    if(i==3){
+      obs_x = obs4x;
+      obs_y = obs4y;
+      obs_w = obs4w;
+    }
+    if(i==4){
+      obs_x = obs5x;
+      obs_y = obs5y;
+      obs_w = obs5w;
+    }
 
     dynamic_map_objects::MovingCylinder cylinder(_x_l, _x_h, _y_l, _y_h, _w_l, _w_h, _h_l, _h_h,
                                                  _v_h, eng, _resolution, obs_x, obs_y, obs_w);
-    if(i==0){
-      cylinder.setVel(_given_vel);// 设置是否使用随机速度
-      cylinder.setMode(_mode);// 设置速度方向是xy都有还是各自有还是完全静止
+    if(i==0){// 只对于第一个设置速度，让它动
+      cylinder.setVel(_given_vel1);// 设置是否使用随机速度
+      cylinder.setVelMode(_mode1);// 设置速度方向是xy都有还是各自有还是完全静止
+    } else if (i == 3) {
+      cylinder.setVel(_given_vel4);// 设置是否使用随机速度
+      cylinder.setVelMode(_mode4);
+    } else if (i == 4) {
+      cylinder.setVel(_given_vel5);
+      cylinder.setVelMode(_mode5);
     }else{
-      cylinder.setMode(3);
+      cylinder.setVelMode(3);// 3---静止
     }
     _dyn_cylinders.push_back(cylinder);
   }
@@ -193,14 +213,13 @@ void pubSensedPoints() {
       dyn_cld.update();// 更新地图内容
     }
     // obs_count++;
-    cloud_all += dyn_cld._cloud;
 
     // publish cylinder markers
     pcl::PointXYZ pt_center;
     pt_center.x = dyn_cld.x;
     pt_center.y = dyn_cld.y;
-    pt_center.z = dyn_cld.w;
-    clouds.points.push_back(pt_center);
+    pt_center.z = 0.5 * dyn_cld.h;
+    clouds.points.push_back(pt_center);// clouds存放圆柱的中心位置
 
     geometry_msgs::Pose pose;
     pose.position.x    = dyn_cld.x;
@@ -211,28 +230,35 @@ void pubSensedPoints() {
     cylinder_mk.pose    = pose;
     cylinder_mk.scale.x = cylinder_mk.scale.y = dyn_cld.w;  // less then 1
     cylinder_mk.scale.z                       = dyn_cld.h;
-    cylinders_vis.markers.push_back(cylinder_mk);
+	cylinder_mk.color.a = 0.3;
+    cylinders_vis.markers.push_back(cylinder_mk);// 每个圆柱都做半透明边界可视化
     cylinder_mk.id += 1;
 
-    obstacle_state.pose               = pose;
-    obstacle_state.pose.position.x    = dyn_cld.x;
-    obstacle_state.pose.position.y    = dyn_cld.y;
-    obstacle_state.pose.position.z    = 0.5 * dyn_cld.h;
-    obstacle_state.pose.orientation.w = 1.0;
-    obstacle_state.points.clear();
-    geometry_msgs::Point pts;
-    pts.x = pose.position.x;
-    pts.y = pose.position.y;
-    pts.z = pose.position.z;
-    obstacle_state.points.push_back(pts);
-    pts.x += dyn_cld.vx * _sense_rate;
-    pts.y += dyn_cld.vy * _sense_rate;
-    obstacle_state.points.push_back(pts);
-    obstacle_state.scale.x = dyn_cld.w;
-    obstacle_state.scale.y = dyn_cld.w;
-    obstacle_state.type    = visualization_msgs::Marker::CYLINDER;
-    obstacle_state_list.markers.push_back(obstacle_state);
-    obstacle_state.id += 1;
+    if (dyn_cld.getVelMode() == 3) {
+      cloud_all += dyn_cld._cloud;  // 3 表示静止的，只有静止的才加入静态地图中
+    } else {
+    //   cloud_all += dyn_cld._cloud;  // 3 表示静止的，只有静止的才加入静态地图中
+      // 只有动态的才发布state消息
+		obstacle_state.pose               = pose;
+		obstacle_state.pose.position.x    = dyn_cld.x;
+		obstacle_state.pose.position.y    = dyn_cld.y;
+		obstacle_state.pose.position.z    = 0.5 * dyn_cld.h;
+		obstacle_state.pose.orientation.w = 1.0;
+		obstacle_state.points.clear();
+		geometry_msgs::Point pts;
+		pts.x = pose.position.x;
+		pts.y = pose.position.y;
+		pts.z = pose.position.z;
+		obstacle_state.points.push_back(pts);
+		pts.x += dyn_cld.vx * _sense_rate;
+		pts.y += dyn_cld.vy * _sense_rate;
+		obstacle_state.points.push_back(pts);
+		obstacle_state.scale.x = dyn_cld.w;
+		obstacle_state.scale.y = dyn_cld.w;
+		obstacle_state.type    = visualization_msgs::Marker::CYLINDER;
+		obstacle_state_list.markers.push_back(obstacle_state);
+        obstacle_state.id += 1;
+	}
   }
 
   cloud_all.width    = cloud_all.points.size();
@@ -248,17 +274,19 @@ void pubSensedPoints() {
   globalMap_pcd.header.frame_id = _frame_id;
   _all_map_cloud_pub.publish(globalMap_pcd);
 
-  // publish cylinder markers
+  // publish cylinder markers for visualization
   pcl::toROSMsg(clouds, globalCylinders_pcd);
   globalCylinders_pcd.header.frame_id = _frame_id;
-  _all_map_cylinder_pub.publish(globalCylinders_pcd);
+  _all_map_cylinder_pub.publish(globalCylinders_pcd);// 捏马，只发布了中心位置，而且全白色的谁看的清啊啊啊啊
+  _all_map_cylinder_pub_vis.publish(cylinders_vis);// 这个倒是发布了能看的清的圆柱边界
 
-  _all_map_cylinder_pub_vis.publish(cylinders_vis);
+  // state
   _cylinder_state_pub.publish(obstacle_state_list);// 其实这个里面好像也有发布障碍物位置信息
 
   // publish walker position
   walker_pose.pose.position.x = _dyn_cylinders[0].x;
   walker_pose.pose.position.y = _dyn_cylinders[0].y;
+  walker_pose.pose.position.z = _dyn_cylinders[0].h * 0.5;
   _obs1_pose_pub.publish(walker_pose);
   return;
 }
@@ -332,14 +360,29 @@ int main(int argc, char** argv) {
   n.param("sensing/radius", _sensing_range, 10.0);
   n.param("sensing/rate", _sense_rate, 10.0);
   n.param("obs1w", obs1w, 0.0);
+  n.param("obs1x", obs1x, 0.0);
+  n.param("obs1y", obs1y, 0.0);
+  n.param("mode1", _mode1, 0);
+  n.param("given_vel1x", _given_vel1[0], 0.0);
+  n.param("given_vel1y", _given_vel1[1], 0.0);
   n.param("obs2x", obs2x, 0.0);
   n.param("obs2y", obs2y, 0.0);
   n.param("obs2w", obs2w, 0.0);
   n.param("obs3x", obs3x, 0.0);
   n.param("obs3y", obs3y, 0.0);
   n.param("obs3w", obs3w, 0.0);
-  n.param("mode", _mode, 0);
-  n.param("given_vel", _given_vel, 0.0);
+  n.param("obs4w", obs4w, 0.0);
+  n.param("obs4x", obs4x, 0.0);
+  n.param("obs4y", obs4y, 0.0);
+  n.param("mode4", _mode4, 0);
+  n.param("given_vel4x", _given_vel4[0], 0.0);
+  n.param("given_vel4y", _given_vel4[1], 0.0);
+  n.param("obs5w", obs5w, 0.0);
+  n.param("obs5x", obs5x, 0.0);
+  n.param("obs5y", obs5y, 0.0);
+  n.param("mode5", _mode5, 0);
+  n.param("given_vel5x", _given_vel5[0], 0.0);
+  n.param("given_vel5y", _given_vel5[1], 0.0);
 
   _x_l = -_x_size / 2.0;
   _x_h = +_x_size / 2.0;
