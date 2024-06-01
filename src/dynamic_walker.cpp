@@ -66,7 +66,7 @@ double      _x_size, _y_size, _z_size;
 double      _x_l, _x_h, _y_l, _y_h, _w_l, _w_h, _h_l, _h_h, _v_h, _dr;
 double      _radius_h, _radius_l, _z_l, _z_h, _theta, _omega_h;
 double      _z_limit, _sensing_range, _resolution, _sense_rate, _init_x, _init_y;
-double      obs_x, obs_y, obs_w, obs1x, obs1y, obs1w, obs2x, obs2y, obs2w, obs3x, obs3y, obs3w, obs4x, obs4y, obs4w, obs5x, obs5y, obs5w;
+double      obs_x, obs_y, obs_w, obs_h, obs1x, obs1y, obs1w, obs1h, obs2x, obs2y, obs2w, obs2h, obs3x, obs3y, obs3w, obs3h, obs4x, obs4y, obs4w, obs4h, obs5x, obs5y, obs5w, obs5h;
 std::string _frame_id;
 
 bool _map_ok       = false;
@@ -129,30 +129,35 @@ void RandomMapGenerate() {
       obs_x = obs1x;
       obs_y = obs1y;
       obs_w = obs1w;
+      obs_h = obs1h;
     }
     if(i==1){
       obs_x = obs2x;
       obs_y = obs2y;
       obs_w = obs2w;
+      obs_h = obs2h;
     }
     if(i==2){
       obs_x = obs3x;
       obs_y = obs3y;
       obs_w = obs3w;
+      obs_h = obs3h;
     }
     if(i==3){
       obs_x = obs4x;
       obs_y = obs4y;
       obs_w = obs4w;
+      obs_h = obs4h;
     }
     if(i==4){
       obs_x = obs5x;
       obs_y = obs5y;
       obs_w = obs5w;
+      obs_h = obs5h;
     }
 
     dynamic_map_objects::MovingCylinder cylinder(_x_l, _x_h, _y_l, _y_h, _w_l, _w_h, _h_l, _h_h,
-                                                 _v_h, eng, _resolution, obs_x, obs_y, obs_w);
+                                                 _v_h, eng, _resolution, obs_x, obs_y, obs_h, obs_w);
     if(i==0){// 只对于第一个设置速度，让它动
       cylinder.setVel(_given_vel1);// 设置是否使用随机速度
       cylinder.setVelMode(_mode1);// 设置速度方向是xy都有还是各自有还是完全静止
@@ -255,6 +260,7 @@ void pubSensedPoints() {
 		obstacle_state.points.push_back(pts);
 		obstacle_state.scale.x = dyn_cld.w;
 		obstacle_state.scale.y = dyn_cld.w;
+		obstacle_state.scale.z = dyn_cld.h;
 		obstacle_state.type    = visualization_msgs::Marker::CYLINDER;
 		obstacle_state_list.markers.push_back(obstacle_state);
         obstacle_state.id += 1;
@@ -362,24 +368,29 @@ int main(int argc, char** argv) {
   n.param("obs1w", obs1w, 0.0);
   n.param("obs1x", obs1x, 0.0);
   n.param("obs1y", obs1y, 0.0);
+  n.param("obs1h", obs1h, 0.0);
   n.param("mode1", _mode1, 0);
   n.param("given_vel1x", _given_vel1[0], 0.0);
   n.param("given_vel1y", _given_vel1[1], 0.0);
   n.param("obs2x", obs2x, 0.0);
   n.param("obs2y", obs2y, 0.0);
   n.param("obs2w", obs2w, 0.0);
+  n.param("obs2h", obs2h, 0.0);
   n.param("obs3x", obs3x, 0.0);
   n.param("obs3y", obs3y, 0.0);
   n.param("obs3w", obs3w, 0.0);
+  n.param("obs3h", obs3h, 0.0);
   n.param("obs4w", obs4w, 0.0);
   n.param("obs4x", obs4x, 0.0);
   n.param("obs4y", obs4y, 0.0);
+  n.param("obs4h", obs4h, 0.0);
   n.param("mode4", _mode4, 0);
   n.param("given_vel4x", _given_vel4[0], 0.0);
   n.param("given_vel4y", _given_vel4[1], 0.0);
   n.param("obs5w", obs5w, 0.0);
   n.param("obs5x", obs5x, 0.0);
   n.param("obs5y", obs5y, 0.0);
+  n.param("obs5h", obs5h, 0.0);
   n.param("mode5", _mode5, 0);
   n.param("given_vel5x", _given_vel5[0], 0.0);
   n.param("given_vel5y", _given_vel5[1], 0.0);

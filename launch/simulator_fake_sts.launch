@@ -55,25 +55,30 @@
 		<param name="sensing/rate" value="20.0"/>
 		<param name="obs1x" value="0.0"/>
 		<param name="obs1y" value="0.0"/>
-		<param name="obs1w" value="0.7"/> <!-- 圆柱的宽度 -->
+		<param name="obs1w" value="0.5"/> <!-- 圆柱的宽度 -->
+		<param name="obs1h" value="0.5"/>
 		<param name="mode1" value="$(arg map_mode1)" />
 		<param name="given_vel1x" value="$(arg given_vel1x)"/>
 		<param name="given_vel1y" value="$(arg given_vel1y)"/>
 		<param name="obs2x" value="-2.0"/>
 		<param name="obs2y" value="1.5"/>
 		<param name="obs2w" value="1.34"/>
+		<param name="obs2h" value="1.8"/>
 		<param name="obs3x" value="5.0"/>
 		<param name="obs3y" value="-1.5"/>
 		<param name="obs3w" value="1.4"/>
+		<param name="obs3h" value="1.8"/>
 		<param name="obs4x" value="-0.4"/>
 		<param name="obs4y" value="0.0"/>
-		<param name="obs4w" value="0.7"/>
+		<param name="obs4w" value="0.6"/>
+		<param name="obs4h" value="1.0"/>
 		<param name="mode4" value="$(arg map_mode4)" />
 		<param name="given_vel4x" value="$(arg given_vel4x)"/>
 		<param name="given_vel4y" value="$(arg given_vel4y)"/>
 		<param name="obs5x" value="1.0"/>
 		<param name="obs5y" value="0.0"/>
 		<param name="obs5w" value="0.7"/>
+		<param name="obs5h" value="1.8"/>
 		<param name="mode5" value="$(arg map_mode5)" />
 		<param name="given_vel5x" value="$(arg given_vel5x)"/>
 		<param name="given_vel5y" value="$(arg given_vel5y)"/>

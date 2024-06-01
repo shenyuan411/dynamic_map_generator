@@ -52,6 +52,7 @@ class MovingCylinder {
                  double                      _resolution,
                  double                      obs_x,
                  double                      obs_y,
+                 double                      obs_h,
                  double                      obs_w);
   ~MovingCylinder() {}
   void setVelMode(int m);
@@ -74,6 +75,7 @@ MovingCylinder::MovingCylinder(double                      x_l,
                                double                      resolution,
                                double                      obs_x,
                                double                      obs_y,
+                               double                      obs_h,
                                double                      obs_w)
     : _x_l(x_l)
     , _x_h(x_h)
@@ -94,7 +96,7 @@ MovingCylinder::MovingCylinder(double                      x_l,
   // genrate random 2D position, width, height
   x = obs_x;
   y = obs_y;
-  h = 1.8;
+  h = obs_h;
   w = obs_w;
   _low_speed_for_turn_x = false;
   _low_speed_for_turn_y = false;
