@@ -85,6 +85,7 @@ int _mode5 = 0;
 std::vector<double> _given_vel1 = {0.0, 0.0};
 std::vector<double> _given_vel4 = {0.0, 0.0};
 std::vector<double> _given_vel5 = {0.0, 0.0};
+double _noiseLevel = 0.05;
 
 /* map sequence settings */
 bool   _future_map = false;
@@ -106,6 +107,22 @@ geometry_msgs::PoseStamped walker_pose;
 
 std::vector<dynamic_map_objects::MovingCylinder> _dyn_cylinders;
 std::vector<dynamic_map_objects::MovingCircle>   _dyn_circles;
+
+// 函数：给一个入参添加噪声
+double addNoise(double input, double noiseLevel) {
+    // 创建一个随机数生成器
+    std::random_device rd;
+    std::default_random_engine generator(rd());
+    std::normal_distribution<double> distribution(0.0, noiseLevel);
+
+    // 生成噪声
+    double noise = distribution(generator);
+
+    // 将噪声与原始值相加
+    double noisyInput = input + noise;
+
+    return noisyInput;
+}
 
 /**
  * @brief generate random map
@@ -245,8 +262,8 @@ void pubSensedPoints() {
     //   cloud_all += dyn_cld._cloud;  // 3 表示静止的，只有静止的才加入静态地图中
       // 只有动态的才发布state消息
 		obstacle_state.pose               = pose;
-		obstacle_state.pose.position.x    = dyn_cld.x;
-		obstacle_state.pose.position.y    = dyn_cld.y;
+		obstacle_state.pose.position.x    = addNoise(dyn_cld.x, _noiseLevel);
+		obstacle_state.pose.position.y    = addNoise(dyn_cld.y, _noiseLevel);
 		obstacle_state.pose.position.z    = 0.5 * dyn_cld.h;
 		obstacle_state.pose.orientation.w = 1.0;
 		obstacle_state.points.clear();
@@ -365,6 +382,7 @@ int main(int argc, char** argv) {
 
   n.param("sensing/radius", _sensing_range, 10.0);
   n.param("sensing/rate", _sense_rate, 10.0);
+  n.param("sensing/noiseLevel", _noiseLevel, 0.05);
   n.param("obs1w", obs1w, 0.0);
   n.param("obs1x", obs1x, 0.0);
   n.param("obs1y", obs1y, 0.0);
