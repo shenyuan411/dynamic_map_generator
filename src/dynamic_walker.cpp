@@ -41,6 +41,7 @@
 
 #include "map_generator/moving_circle.h"
 #include "map_generator/moving_cylinder_backandforth.h"
+#include "map_generator/wall.h"
 
 using namespace std;
 
@@ -61,12 +62,15 @@ ros::Publisher click_map_pub_, _cylinder_state_pub, _obs1_pose_pub;
 
 vector<double> _state;
 
-int         _obs_num, _circle_num;
+int         _obs_num, _circle_num, _wall_num;
 double      _x_size, _y_size, _z_size;
 double      _x_l, _x_h, _y_l, _y_h, _w_l, _w_h, _h_l, _h_h, _v_h, _dr;
 double      _radius_h, _radius_l, _z_l, _z_h, _theta, _omega_h;
 double      _z_limit, _sensing_range, _resolution, _sense_rate, _init_x, _init_y;
 double      obs_x, obs_y, obs_w, obs_h, obs1x, obs1y, obs1w, obs1h, obs2x, obs2y, obs2w, obs2h, obs3x, obs3y, obs3w, obs3h, obs4x, obs4y, obs4w, obs4h, obs5x, obs5y, obs5w, obs5h;
+double wall_x1_begin, wall_x1_end, wall_y1_begin, wall_y1_end;
+double wall_x2_begin, wall_x2_end, wall_y2_begin, wall_y2_end;
+// std::vector<double> wall_x_begin, wall_x_end, wall_y_begin, wall_y_end;
 std::string _frame_id;
 
 bool _map_ok       = false;
@@ -107,6 +111,9 @@ geometry_msgs::PoseStamped walker_pose;
 
 std::vector<dynamic_map_objects::MovingCylinder> _dyn_cylinders;
 std::vector<dynamic_map_objects::MovingCircle>   _dyn_circles;
+
+std::vector<static_env::Wall> _sta_walls;
+bool _dyn_obj_cld_pub = true;
 
 // 函数：给一个入参添加噪声
 double addNoise(double input, double noiseLevel) {
@@ -190,6 +197,15 @@ void RandomMapGenerate() {
     _dyn_cylinders.push_back(cylinder);
   }
 
+  _sta_walls.clear();
+  _sta_walls.reserve(_wall_num);
+    static_env::Wall wall1(wall_x1_begin, wall_y1_begin, wall_x1_end,
+                          wall_y1_end);
+    _sta_walls.push_back(wall1);
+    static_env::Wall wall2(wall_x2_begin, wall_y2_begin, wall_x2_end,
+                          wall_y2_end);
+    _sta_walls.push_back(wall2);
+
   ROS_WARN("Finished generate obstacle map ");
 
   _map_ok = true;
@@ -259,7 +275,7 @@ void pubSensedPoints() {
     if (dyn_cld.getVelMode() == 3) {
       cloud_all += dyn_cld._cloud;  // 3 表示静止的，只有静止的才加入静态地图中
     } else {
-    //   cloud_all += dyn_cld._cloud;  // 3 表示静止的，只有静止的才加入静态地图中
+       if (_dyn_obj_cld_pub) cloud_all += dyn_cld._cloud;  // 3 表示静止的，只有静止的才加入静态地图中
       // 只有动态的才发布state消息
 		obstacle_state.pose               = pose;
 		obstacle_state.pose.position.x    = addNoise(dyn_cld.x, _noiseLevel);
@@ -272,9 +288,9 @@ void pubSensedPoints() {
 		pts.y = pose.position.y;
 		pts.z = pose.position.z;
 		obstacle_state.points.push_back(pts);
-		pts.x += dyn_cld.vx * _sense_rate;
-		pts.y += dyn_cld.vy * _sense_rate;
-		obstacle_state.points.push_back(pts);
+		// pts.x += dyn_cld.vx / _sense_rate;
+		// pts.y += dyn_cld.vy / _sense_rate;
+		// obstacle_state.points.push_back(pts);
 		obstacle_state.scale.x = dyn_cld.w;
 		obstacle_state.scale.y = dyn_cld.w;
 		obstacle_state.scale.z = dyn_cld.h;
@@ -282,6 +298,10 @@ void pubSensedPoints() {
 		obstacle_state_list.markers.push_back(obstacle_state);
         obstacle_state.id += 1;
 	}
+  }
+
+  for (auto& sta_wall : _sta_walls) {
+    cloud_all += sta_wall._cloud;
   }
 
   cloud_all.width    = cloud_all.points.size();
@@ -356,11 +376,9 @@ int main(int argc, char** argv) {
   n.param("map/z_size", _z_size, 5.0);
   n.param("map/test", _test_mode, false); 
 
-  // clearance for multi robots.
-  _x_size -= 2.0;
-  _y_size -= 2.0;
 
   n.param("map/obs_num", _obs_num, 3);
+  n.param("map/wall_num", _wall_num, 2);
   n.param("map/resolution", _resolution, 0.1);
   n.param("map/frame_id", _frame_id, string("map"));
 
@@ -383,6 +401,7 @@ int main(int argc, char** argv) {
   n.param("sensing/radius", _sensing_range, 10.0);
   n.param("sensing/rate", _sense_rate, 10.0);
   n.param("sensing/noiseLevel", _noiseLevel, 0.05);
+  n.param("dyn_obj_cld_pub", _dyn_obj_cld_pub, false);
   n.param("obs1w", obs1w, 0.0);
   n.param("obs1x", obs1x, 0.0);
   n.param("obs1y", obs1y, 0.0);
@@ -412,6 +431,23 @@ int main(int argc, char** argv) {
   n.param("mode5", _mode5, 0);
   n.param("given_vel5x", _given_vel5[0], 0.0);
   n.param("given_vel5y", _given_vel5[1], 0.0);
+
+//   wall_x_begin.reserve(_wall_num);
+//   wall_y_begin.reserve(_wall_num);
+//   wall_x_end.reserve(_wall_num);
+//   wall_x_end.reserve(_wall_num);
+  n.param("wall_x1_begin", wall_x1_begin, 0.0);
+  n.param("wall_y1_begin", wall_y1_begin, 0.0);
+  n.param("wall_x1_end", wall_x1_end, 0.0);
+  n.param("wall_y1_end", wall_y1_end, 0.0);
+  n.param("wall_x2_begin", wall_x2_begin, 0.0);
+  n.param("wall_y2_begin", wall_y2_begin, 0.0);
+  n.param("wall_x2_end", wall_x2_end, 0.0);
+  n.param("wall_y2_end", wall_y2_end, 0.0);
+
+  // clearance for multi robots.
+  _x_size -= 2.0;
+  _y_size -= 2.0;
 
   _x_l = -_x_size / 2.0;
   _x_h = +_x_size / 2.0;

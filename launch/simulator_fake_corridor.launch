@@ -13,11 +13,11 @@
 	<arg name="odom_pose_topic" />
 	<arg name="drone_id" />
 	<arg name="map_mode1" default="1" /> <!-- 障碍物1的运动模式为只有y方向的速度-->
-	<arg name="given_vel1x" default="0.05"/>  <!-- 单位很迷阿  -->
-	<arg name="given_vel1y" default="0.05"/>  <!-- 单位很迷阿  -->
+	<arg name="given_vel1x" default="0.05"/>  <!-- 单位乘上10才为障碍物移动的速度m/s  -->
+	<arg name="given_vel1y" default="0.05"/>  <!-- 单位乘上10才为障碍物移动的速度m/s  -->
 	<arg name="map_mode4" default="1" /> <!-- 障碍物4的运动模式为有x和y方向的速度-->
-	<arg name="given_vel4x" default="0.05"/>  <!-- 单位很迷阿  -->
-	<arg name="given_vel4y" default="-0.02"/>  <!-- 单位很迷阿  -->
+	<arg name="given_vel4x" default="0.05"/>  <!--   -->
+	<arg name="given_vel4y" default="-0.02"/>  <!--   -->
 	<arg name="map_mode5" default="1" /> <!-- 障碍物4的运动模式为有x和y方向的速度-->
 	<arg name="given_vel5x" default="0.05"/>
 	<arg name="given_vel5y" default="-0.02"/>

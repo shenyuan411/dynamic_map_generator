@@ -8,7 +8,7 @@
   <arg name="rviz" default="True" />
 
   <include file="$(find map_generator)/launch/simulator_fake_sts.launch">
-    <arg name="map_mode" value="2" />
+    <arg name="map_mode1" value="2" />
     <arg name="map_size_x" value="$(arg map_size_x)" />
     <arg name="map_size_y" value="$(arg map_size_y)" />
     <arg name="map_size_z" value="$(arg map_size_z)" />
