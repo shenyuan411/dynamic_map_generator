@@ -181,31 +181,31 @@ void MovingCylinder::update() {
   Eigen::Affine3f transform = Eigen::Affine3f::Identity();
   transform.translation() << vx, vy, 0;
   pcl::transformPointCloud(_cloud, _cloud, transform);
-  double dist_ready_to_low = 0.1;
+//   double dist_ready_to_low = 0.1;
 
-  if (!_low_speed_for_turn_x && (x - _x_l < dist_ready_to_low || _x_h - x < dist_ready_to_low)) {
-    vx *= 0.25;
-    _low_speed_for_turn_x = true;
-  }
+//   if (!_low_speed_for_turn_x && (x - _x_l < dist_ready_to_low || _x_h - x < dist_ready_to_low)) {
+//     vx *= 0.25;
+//     _low_speed_for_turn_x = true;
+//   }
 
-  if (_low_speed_for_turn_x && (x - _x_l > dist_ready_to_low && _x_h - x > dist_ready_to_low)) {
-    vx *= 4;
-    _low_speed_for_turn_x = false;
-  }
+//   if (_low_speed_for_turn_x && (x - _x_l > dist_ready_to_low && _x_h - x > dist_ready_to_low)) {
+//     vx *= 4;
+//     _low_speed_for_turn_x = false;
+//   }
 
   if (x < _x_l || x > _x_h) {
     vx = -vx;
   }
 
-  if (!_low_speed_for_turn_y && (y - _y_l < dist_ready_to_low || _y_h - y < dist_ready_to_low)) {
-    vy *= 0.25;
-    _low_speed_for_turn_y= true;
-  }
+//   if (!_low_speed_for_turn_y && (y - _y_l < dist_ready_to_low || _y_h - y < dist_ready_to_low)) {
+//     vy *= 0.25;
+//     _low_speed_for_turn_y= true;
+//   }
 
-  if (_low_speed_for_turn_y && (y - _y_l > dist_ready_to_low && _y_h - y > dist_ready_to_low)) {
-    vy *= 4;
-    _low_speed_for_turn_y = false;
-  }
+//   if (_low_speed_for_turn_y && (y - _y_l > dist_ready_to_low && _y_h - y > dist_ready_to_low)) {
+//     vy *= 4;
+//     _low_speed_for_turn_y = false;
+//   }
 
   if (y < _y_l || y > _y_h) {
     vy = -vy;

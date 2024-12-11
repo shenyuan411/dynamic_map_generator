@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   geometry_msgs
   pcl_conversions
+  pcl_ros
 )
 find_package(PCL 1.7 REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -60,11 +61,24 @@ add_executable(dynamic_walker src/dynamic_walker.cpp)
 target_link_libraries(dynamic_walker
     ${catkin_LIBRARIES}
     ${PCL_LIBRARIES})
+  
+add_executable(dynamic_walker2_bigHouse src/dynamic_walker2_bigHouse.cpp)
+target_link_libraries(dynamic_walker2_bigHouse
+    ${catkin_LIBRARIES}
+    ${PCL_LIBRARIES})
+
+add_executable(dynamic_walker_realExp src/dynamic_walker_realExp.cpp)
+target_link_libraries(dynamic_walker_realExp
+    ${catkin_LIBRARIES}
+    ${PCL_LIBRARIES})
 
 add_executable(click_map src/click_map.cpp)
 target_link_libraries(click_map
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES})
+
+add_executable(read_pcd src/read_pcd.cpp)
+target_link_libraries(read_pcd ${catkin_LIBRARIES})
 
 install(TARGETS random_forest click_map
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

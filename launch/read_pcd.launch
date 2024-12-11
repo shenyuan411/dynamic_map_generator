@@ -1,0 +1,7 @@
+<launch>
+    <param name="file_path" value="/home/nros/bigHouse2.pcd"/>
+    <node type="read_pcd" name="read_pcd" pkg="map_generator" >
+		<remap from="/pcl_output" to="/map_generator/global_cloud"/>
+	</node>
+</launch>
+

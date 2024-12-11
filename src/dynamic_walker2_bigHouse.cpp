@@ -73,9 +73,7 @@ double      x_l5,x_h5,y_l5,y_h5;
 double      _radius_h, _radius_l, _z_l, _z_h, _theta, _omega_h;
 double      _z_limit, _sensing_range, _resolution, _sense_rate, _init_x, _init_y;
 double      obs_x, obs_y, obs_w, obs_h, obs1x, obs1y, obs1w, obs1h, obs2x, obs2y, obs2w, obs2h, obs3x, obs3y, obs3w, obs3h, obs4x, obs4y, obs4w, obs4h, obs5x, obs5y, obs5w, obs5h;
-double wall_x1_begin, wall_x1_end, wall_y1_begin, wall_y1_end;
-double wall_x2_begin, wall_x2_end, wall_y2_begin, wall_y2_end;
-// std::vector<double> wall_x_begin, wall_x_end, wall_y_begin, wall_y_end;
+
 std::string _frame_id;
 
 bool _map_ok       = false;
@@ -89,9 +87,13 @@ bool _test_mode    = false;
  * 2: randomize vy, vx = 0
  */
 int _mode1 = 0;
+int _mode2 = 0;
+int _mode3 = 0;
 int _mode4 = 0;
 int _mode5 = 0;
 std::vector<double> _given_vel1 = {0.0, 0.0};
+std::vector<double> _given_vel2 = {0.0, 0.0};
+std::vector<double> _given_vel3 = {0.0, 0.0};
 std::vector<double> _given_vel4 = {0.0, 0.0};
 std::vector<double> _given_vel5 = {0.0, 0.0};
 double _noiseLevel = 0.05;
@@ -117,8 +119,10 @@ geometry_msgs::PoseStamped walker_pose;
 std::vector<dynamic_map_objects::MovingCylinder> _dyn_cylinders;
 std::vector<dynamic_map_objects::MovingCircle>   _dyn_circles;
 
-std::vector<static_env::Wall> _sta_walls;
+// std::vector<static_env::Wall> _sta_walls;
+std::string _pcd_file_path;
 bool _dyn_obj_cld_pub = true;
+bool _load_pcd_file = false;
 
 // 函数：给一个入参添加噪声
 double addNoise(double input, double noiseLevel) {
@@ -153,47 +157,73 @@ void RandomMapGenerate() {
   // generate pillar obstacles
   _dyn_cylinders.clear();
   _dyn_cylinders.reserve(_obs_num);
-  for (int i = 0; i < _obs_num; i++) {
-    if(i==0){
+  for (int i = 1; i <= _obs_num; i++) {
+    if(i==1){
       obs_x = obs1x;
       obs_y = obs1y;
       obs_w = obs1w;
       obs_h = obs1h;
+      _x_l = x_l1;
+      _x_h = x_h1;
+      _y_l = y_l1;
+      _y_h = y_h1;
     }
-    if(i==1){
+    if(i==2){
       obs_x = obs2x;
       obs_y = obs2y;
       obs_w = obs2w;
       obs_h = obs2h;
+      _x_l = x_l2;
+      _x_h = x_h2;
+      _y_l = y_l2;
+      _y_h = y_h2;
     }
-    if(i==2){
+    if(i==3){
       obs_x = obs3x;
       obs_y = obs3y;
       obs_w = obs3w;
       obs_h = obs3h;
+      _x_l = x_l3;
+      _x_h = x_h3;
+      _y_l = y_l3;
+      _y_h = y_h3;
     }
-    if(i==3){
+    if(i==4){
       obs_x = obs4x;
       obs_y = obs4y;
       obs_w = obs4w;
       obs_h = obs4h;
+      _x_l = x_l4;
+      _x_h = x_h4;
+      _y_l = y_l4;
+      _y_h = y_h4;
     }
-    if(i==4){
+    if(i==5){
       obs_x = obs5x;
       obs_y = obs5y;
       obs_w = obs5w;
       obs_h = obs5h;
+      _x_l = x_l5;
+      _x_h = x_h5;
+      _y_l = y_l5;
+      _y_h = y_h5;
     }
 
     dynamic_map_objects::MovingCylinder cylinder(_x_l, _x_h, _y_l, _y_h, _w_l, _w_h, _h_l, _h_h,
                                                  _v_h, eng, _resolution, obs_x, obs_y, obs_h, obs_w);
-    if(i==0){// 只对于第一个设置速度，让它动
+    if(i==1){// 只对于第一个设置速度，让它动
       cylinder.setVel(_given_vel1);// 设置是否使用随机速度
       cylinder.setVelMode(_mode1);// 设置速度方向是xy都有还是各自有还是完全静止
+    } else if (i == 2) {
+      cylinder.setVel(_given_vel2);
+      cylinder.setVelMode(_mode2);
     } else if (i == 3) {
-      cylinder.setVel(_given_vel4);// 设置是否使用随机速度
-      cylinder.setVelMode(_mode4);
+      cylinder.setVel(_given_vel3);
+      cylinder.setVelMode(_mode3);
     } else if (i == 4) {
+      cylinder.setVel(_given_vel4);
+      cylinder.setVelMode(_mode4);
+    } else if (i == 5) {
       cylinder.setVel(_given_vel5);
       cylinder.setVelMode(_mode5);
     }else{
@@ -201,15 +231,6 @@ void RandomMapGenerate() {
     }
     _dyn_cylinders.push_back(cylinder);
   }
-
-  _sta_walls.clear();
-  _sta_walls.reserve(_wall_num);
-    static_env::Wall wall1(wall_x1_begin, wall_y1_begin, wall_x1_end,
-                          wall_y1_end);
-    _sta_walls.push_back(wall1);
-    static_env::Wall wall2(wall_x2_begin, wall_y2_begin, wall_x2_end,
-                          wall_y2_end);
-    _sta_walls.push_back(wall2);
 
   ROS_WARN("Finished generate obstacle map ");
 
@@ -236,6 +257,8 @@ void pubSensedPoints() {
   obstacle_state.id = 0;
 
   pcl::PointCloud<pcl::PointXYZ> cloud_all;
+
+  if (_load_pcd_file) pcl::io::loadPCDFile(_pcd_file_path,cloud_all);//通过launch文件修改路径, 表示从文件中读取
 
   // int obs_count=0;
   for (auto& dyn_cld : _dyn_cylinders) {
@@ -305,9 +328,6 @@ void pubSensedPoints() {
 	}
   }
 
-  for (auto& sta_wall : _sta_walls) {
-    cloud_all += sta_wall._cloud;
-  }
 
   cloud_all.width    = cloud_all.points.size();
   cloud_all.height   = 1;
@@ -320,7 +340,7 @@ void pubSensedPoints() {
   // publish cloud
   pcl::toROSMsg(cloud_all, globalMap_pcd);
   globalMap_pcd.header.frame_id = _frame_id;
-  _all_map_cloud_pub.publish(globalMap_pcd);
+  if(_dyn_obj_cld_pub) _all_map_cloud_pub.publish(globalMap_pcd);
 
   // publish cylinder markers for visualization
   pcl::toROSMsg(clouds, globalCylinders_pcd);
@@ -360,7 +380,6 @@ int main(int argc, char** argv) {
   ros::NodeHandle n("~");
 
   //_local_map_pub = n.advertise<sensor_msgs::PointCloud2>("local_cloud", 1);
-  _all_map_cloud_pub    = n.advertise<sensor_msgs::PointCloud2>("global_cloud", 1);
   _all_map_cylinder_pub = n.advertise<sensor_msgs::PointCloud2>("global_cylinders", 1);
   _all_map_cylinder_pub_vis =
       n.advertise<visualization_msgs::MarkerArray>("global_cylinders_vis", 1);
@@ -407,6 +426,7 @@ int main(int argc, char** argv) {
   n.param("sensing/rate", _sense_rate, 10.0);
   n.param("sensing/noiseLevel", _noiseLevel, 0.05);
   n.param("dyn_obj_cld_pub", _dyn_obj_cld_pub, false);
+  n.param("load_pcd_file", _load_pcd_file, false);
 
   n.param("obs1w", obs1w, 0.0);
   n.param("obs1x", obs1x, 0.0);
@@ -420,14 +440,30 @@ int main(int argc, char** argv) {
   n.param("obs1y_l", y_l1, 0.0);
   n.param("obs1y_h", y_h1, 0.0);
 
+  n.param("obs2w", obs2w, 0.0);
   n.param("obs2x", obs2x, 0.0);
   n.param("obs2y", obs2y, 0.0);
-  n.param("obs2w", obs2w, 0.0);
   n.param("obs2h", obs2h, 0.0);
+  n.param("mode2", _mode2, 0);
+  n.param("given_vel2x", _given_vel2[0], 0.0);
+  n.param("given_vel2y", _given_vel2[1], 0.0);
+  n.param("obs2x_l", x_l2, 0.0);
+  n.param("obs2x_h", x_h2, 0.0);
+  n.param("obs2y_l", y_l2, 0.0);
+  n.param("obs2y_h", y_h2, 0.0);
+
+  n.param("obs3w", obs3w, 0.0);
   n.param("obs3x", obs3x, 0.0);
   n.param("obs3y", obs3y, 0.0);
-  n.param("obs3w", obs3w, 0.0);
   n.param("obs3h", obs3h, 0.0);
+  n.param("mode3", _mode3, 0);
+  n.param("given_vel3x", _given_vel3[0], 0.0);
+  n.param("given_vel3y", _given_vel3[1], 0.0);
+  n.param("obs3x_l", x_l3, 0.0);
+  n.param("obs3x_h", x_h3, 0.0);
+  n.param("obs3y_l", y_l3, 0.0);
+  n.param("obs3y_h", y_h3, 0.0);
+
   n.param("obs4w", obs4w, 0.0);
   n.param("obs4x", obs4x, 0.0);
   n.param("obs4y", obs4y, 0.0);
@@ -435,6 +471,11 @@ int main(int argc, char** argv) {
   n.param("mode4", _mode4, 0);
   n.param("given_vel4x", _given_vel4[0], 0.0);
   n.param("given_vel4y", _given_vel4[1], 0.0);
+  n.param("obs4x_l", x_l4, 0.0);
+  n.param("obs4x_h", x_h4, 0.0);
+  n.param("obs4y_l", y_l4, 0.0);
+  n.param("obs4y_h", y_h4, 0.0);
+
   n.param("obs5w", obs5w, 0.0);
   n.param("obs5x", obs5x, 0.0);
   n.param("obs5y", obs5y, 0.0);
@@ -442,29 +483,19 @@ int main(int argc, char** argv) {
   n.param("mode5", _mode5, 0);
   n.param("given_vel5x", _given_vel5[0], 0.0);
   n.param("given_vel5y", _given_vel5[1], 0.0);
+  n.param("obs5x_l", x_l5, 0.0);
+  n.param("obs5x_h", x_h5, 0.0);
+  n.param("obs5y_l", y_l5, 0.0);
+  n.param("obs5y_h", y_h5, 0.0);
 
-//   wall_x_begin.reserve(_wall_num);
-//   wall_y_begin.reserve(_wall_num);
-//   wall_x_end.reserve(_wall_num);
-//   wall_x_end.reserve(_wall_num);
-  n.param("wall_x1_begin", wall_x1_begin, 0.0);
-  n.param("wall_y1_begin", wall_y1_begin, 0.0);
-  n.param("wall_x1_end", wall_x1_end, 0.0);
-  n.param("wall_y1_end", wall_y1_end, 0.0);
-  n.param("wall_x2_begin", wall_x2_begin, 0.0);
-  n.param("wall_y2_begin", wall_y2_begin, 0.0);
-  n.param("wall_x2_end", wall_x2_end, 0.0);
-  n.param("wall_y2_end", wall_y2_end, 0.0);
 
+
+  n.param<std::string>("file_path", _pcd_file_path, "/home/nros/bigHouse2.pcd");
+
+  if (_dyn_obj_cld_pub) _all_map_cloud_pub    = n.advertise<sensor_msgs::PointCloud2>("global_cloud", 1);
   // clearance for multi robots.
   _x_size -= 2.0;
   _y_size -= 2.0;
-
-  _x_l = -_x_size / 2.0;
-  _x_h = +_x_size / 2.0;
-
-  _y_l = -_y_size / 2.0;
-  _y_h = +_y_size / 2.0;
 
   _obs_num = min(_obs_num, (int)_x_size * 10);
   _z_limit = _z_size;

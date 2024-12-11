@@ -58,11 +58,11 @@ uniform_real_distribution<double> rand_h;
 
 // ros::Publisher _local_map_pub;
 ros::Publisher _all_map_cloud_pub, _all_map_cylinder_pub, _all_map_cylinder_pub_vis;
-ros::Publisher click_map_pub_, _cylinder_state_pub, _obs1_pose_pub;
+ros::Publisher click_map_pub_, _cylinder_state_pub;
 
 vector<double> _state;
 
-int         _obs_num, _circle_num, _wall_num;
+int         _obs_num, _box_num, _wall_num;
 double      _x_size, _y_size, _z_size;
 double      _x_l, _x_h, _y_l, _y_h, _w_l, _w_h, _h_l, _h_h, _v_h, _dr;
 double      x_l1,x_h1,y_l1,y_h1;
@@ -75,6 +75,8 @@ double      _z_limit, _sensing_range, _resolution, _sense_rate, _init_x, _init_y
 double      obs_x, obs_y, obs_w, obs_h, obs1x, obs1y, obs1w, obs1h, obs2x, obs2y, obs2w, obs2h, obs3x, obs3y, obs3w, obs3h, obs4x, obs4y, obs4w, obs4h, obs5x, obs5y, obs5w, obs5h;
 double wall_x1_begin, wall_x1_end, wall_y1_begin, wall_y1_end;
 double wall_x2_begin, wall_x2_end, wall_y2_begin, wall_y2_end;
+double box1_x, box1_y;
+double box2_x, box2_y;
 // std::vector<double> wall_x_begin, wall_x_end, wall_y_begin, wall_y_end;
 std::string _frame_id;
 
@@ -118,6 +120,8 @@ std::vector<dynamic_map_objects::MovingCylinder> _dyn_cylinders;
 std::vector<dynamic_map_objects::MovingCircle>   _dyn_circles;
 
 std::vector<static_env::Wall> _sta_walls;
+std::vector<static_env::Box> _sta_boxs;
+
 bool _dyn_obj_cld_pub = true;
 
 // 函数：给一个入参添加噪声
@@ -204,12 +208,21 @@ void RandomMapGenerate() {
 
   _sta_walls.clear();
   _sta_walls.reserve(_wall_num);
+
     static_env::Wall wall1(wall_x1_begin, wall_y1_begin, wall_x1_end,
                           wall_y1_end);
     _sta_walls.push_back(wall1);
     static_env::Wall wall2(wall_x2_begin, wall_y2_begin, wall_x2_end,
                           wall_y2_end);
     _sta_walls.push_back(wall2);
+
+  _sta_boxs.clear();
+  _sta_boxs.reserve(_box_num);
+  cout << "box_num: " << _box_num << endl;
+    static_env::Box box1(box1_x, box1_y);
+    _sta_boxs.push_back(box1);
+    static_env::Box box2(box2_x, box2_y);
+    _sta_boxs.push_back(box2);
 
   ROS_WARN("Finished generate obstacle map ");
 
@@ -238,75 +251,85 @@ void pubSensedPoints() {
   pcl::PointCloud<pcl::PointXYZ> cloud_all;
 
   // int obs_count=0;
-  for (auto& dyn_cld : _dyn_cylinders) {
-    // if(obs_count==0){
-    //   obs_x = obs1x;// TODO:在此更新值，使得位置在范围内变动，并把位置发出去。
-    //   obs_y = obs1y;
-    // }
-    // if(obs_count==1){
-    //   obs_x = obs2x;
-    //   obs_y = obs2y;
-    // }
-    // if(obs_count==2){
-    //   obs_x = obs3x;
-    //   obs_y = obs3y;
-    // }
-    if (!_test_mode) {
-      // dyn_cld.update(obs_x,obs_y);// 更新地图内容
-      dyn_cld.update();// 更新地图内容
-    }
-    // obs_count++;
+  if (!_dyn_cylinders.empty()) {
+	for (auto& dyn_cld : _dyn_cylinders) {
+		// if(obs_count==0){
+		//   obs_x = obs1x;// TODO:在此更新值，使得位置在范围内变动，并把位置发出去。
+		//   obs_y = obs1y;
+		// }
+		// if(obs_count==1){
+		//   obs_x = obs2x;
+		//   obs_y = obs2y;
+		// }
+		// if(obs_count==2){
+		//   obs_x = obs3x;
+		//   obs_y = obs3y;
+		// }
+		if (!_test_mode) {
+		// dyn_cld.update(obs_x,obs_y);// 更新地图内容
+		dyn_cld.update();// 更新地图内容
+		}
+		// obs_count++;
 
-    // publish cylinder markers
-    pcl::PointXYZ pt_center;
-    pt_center.x = dyn_cld.x;
-    pt_center.y = dyn_cld.y;
-    pt_center.z = 0.5 * dyn_cld.h;
-    clouds.points.push_back(pt_center);// clouds存放圆柱的中心位置
+		// publish cylinder markers
+		pcl::PointXYZ pt_center;
+		pt_center.x = dyn_cld.x;
+		pt_center.y = dyn_cld.y;
+		pt_center.z = 0.5 * dyn_cld.h;
+		clouds.points.push_back(pt_center);// clouds存放圆柱的中心位置
 
-    geometry_msgs::Pose pose;
-    pose.position.x    = dyn_cld.x;
-    pose.position.y    = dyn_cld.y;
-    pose.position.z    = 0.5 * dyn_cld.h;
-    pose.orientation.w = 1.0;
+		geometry_msgs::Pose pose;
+		pose.position.x    = dyn_cld.x;
+		pose.position.y    = dyn_cld.y;
+		pose.position.z    = 0.5 * dyn_cld.h;
+		pose.orientation.w = 1.0;
 
-    cylinder_mk.pose    = pose;
-    cylinder_mk.scale.x = cylinder_mk.scale.y = dyn_cld.w;  // less then 1
-    cylinder_mk.scale.z                       = dyn_cld.h;
-	cylinder_mk.color.a = 0.3;
-    cylinders_vis.markers.push_back(cylinder_mk);// 每个圆柱都做半透明边界可视化
-    cylinder_mk.id += 1;
+		cylinder_mk.pose    = pose;
+		cylinder_mk.scale.x = cylinder_mk.scale.y = dyn_cld.w;  // less then 1
+		cylinder_mk.scale.z                       = dyn_cld.h;
+		cylinder_mk.color.a = 0.3;
+		cylinders_vis.markers.push_back(cylinder_mk);// 每个圆柱都做半透明边界可视化
+		cylinder_mk.id += 1;
 
-    if (dyn_cld.getVelMode() == 3) {
-      cloud_all += dyn_cld._cloud;  // 3 表示静止的，只有静止的才加入静态地图中
-    } else {
-       if (_dyn_obj_cld_pub) cloud_all += dyn_cld._cloud;  // 3 表示静止的，只有静止的才加入静态地图中
-      // 只有动态的才发布state消息
-		obstacle_state.pose               = pose;
-		obstacle_state.pose.position.x    = addNoise(dyn_cld.x, _noiseLevel);
-		obstacle_state.pose.position.y    = addNoise(dyn_cld.y, _noiseLevel);
-		obstacle_state.pose.position.z    = 0.5 * dyn_cld.h;
-		obstacle_state.pose.orientation.w = 1.0;
-		obstacle_state.points.clear();
-		geometry_msgs::Point pts;
-		pts.x = pose.position.x;
-		pts.y = pose.position.y;
-		pts.z = pose.position.z;
-		obstacle_state.points.push_back(pts);
-		// pts.x += dyn_cld.vx / _sense_rate;
-		// pts.y += dyn_cld.vy / _sense_rate;
-		// obstacle_state.points.push_back(pts);
-		obstacle_state.scale.x = dyn_cld.w;
-		obstacle_state.scale.y = dyn_cld.w;
-		obstacle_state.scale.z = dyn_cld.h;
-		obstacle_state.type    = visualization_msgs::Marker::CYLINDER;
-		obstacle_state_list.markers.push_back(obstacle_state);
-        obstacle_state.id += 1;
+		if (dyn_cld.getVelMode() == 3) {
+		cloud_all += dyn_cld._cloud;  // 3 表示静止的，只有静止的才加入静态地图中
+		} else {
+		if (_dyn_obj_cld_pub) cloud_all += dyn_cld._cloud;  // 3 表示静止的，只有静止的才加入静态地图中
+		// 只有动态的才发布state消息
+			obstacle_state.pose               = pose;
+			obstacle_state.pose.position.x    = addNoise(dyn_cld.x, _noiseLevel);
+			obstacle_state.pose.position.y    = addNoise(dyn_cld.y, _noiseLevel);
+			obstacle_state.pose.position.z    = 0.5 * dyn_cld.h;
+			obstacle_state.pose.orientation.w = 1.0;
+			obstacle_state.points.clear();
+			geometry_msgs::Point pts;
+			pts.x = pose.position.x;
+			pts.y = pose.position.y;
+			pts.z = pose.position.z;
+			obstacle_state.points.push_back(pts);
+			// pts.x += dyn_cld.vx / _sense_rate;
+			// pts.y += dyn_cld.vy / _sense_rate;
+			// obstacle_state.points.push_back(pts);
+			obstacle_state.scale.x = dyn_cld.w;
+			obstacle_state.scale.y = dyn_cld.w;
+			obstacle_state.scale.z = dyn_cld.h;
+			obstacle_state.type    = visualization_msgs::Marker::CYLINDER;
+			obstacle_state_list.markers.push_back(obstacle_state);
+			obstacle_state.id += 1;
+		}
 	}
   }
 
-  for (auto& sta_wall : _sta_walls) {
-    cloud_all += sta_wall._cloud;
+  if (!_sta_walls.empty()) {
+	for (auto& sta_wall : _sta_walls) {
+		cloud_all += sta_wall._cloud;
+	}    
+  }
+
+  if (!_sta_boxs.empty()) {
+	for (auto& sta_box : _sta_boxs) {
+		cloud_all += sta_box._cloud;
+	}    
   }
 
   cloud_all.width    = cloud_all.points.size();
@@ -331,11 +354,6 @@ void pubSensedPoints() {
   // state
   _cylinder_state_pub.publish(obstacle_state_list);// 其实这个里面好像也有发布障碍物位置信息
 
-  // publish walker position
-  walker_pose.pose.position.x = _dyn_cylinders[0].x;
-  walker_pose.pose.position.y = _dyn_cylinders[0].y;
-  walker_pose.pose.position.z = _dyn_cylinders[0].h * 0.5;
-  _obs1_pose_pub.publish(walker_pose);
   return;
 }
 
@@ -366,7 +384,7 @@ int main(int argc, char** argv) {
       n.advertise<visualization_msgs::MarkerArray>("global_cylinders_vis", 1);
   _cylinder_state_pub = n.advertise<visualization_msgs::MarkerArray>("global_cylinder_state", 1);
 
-  _obs1_pose_pub = n.advertise<geometry_msgs::PoseStamped>("gazebo_actor1_pos",1);
+//   _obs1_pose_pub = n.advertise<geometry_msgs::PoseStamped>("gazebo_actor1_pos",1);
 //   ros::Subscriber obs1_pose_sub =n.subscribe<geometry_msgs::PoseWithCovarianceStamped>("/gazebo_actor1_pos", 100, obs1_pose_set_callback);
   //ros::Subscriber obs2_pose_sub =n.subscribe<geometry_msgs::PoseStamped>("/vrpn_client_node/obstacle2/pose", 100, obs2_pose_set_callback);
   //ros::Subscriber obs3_pose_sub =n.subscribe<geometry_msgs::PoseStamped>("/vrpn_client_node/obstacle3/pose", 100, obs3_pose_set_callback);
@@ -384,6 +402,7 @@ int main(int argc, char** argv) {
 
   n.param("map/obs_num", _obs_num, 3);
   n.param("map/wall_num", _wall_num, 2);
+  n.param("map/box_num", _box_num, 1);
   n.param("map/resolution", _resolution, 0.1);
   n.param("map/frame_id", _frame_id, string("map"));
 
@@ -394,7 +413,6 @@ int main(int argc, char** argv) {
   n.param("ObstacleShape/upper_vel", _v_h, 0.1);
   n.param("ObstacleShape/set_cylinder", _set_cylinder, false);
 
-  n.param("map/circle_num", _circle_num, 0);
   n.param("ObstacleShape/radius_l", _radius_l, 7.0);
   n.param("ObstacleShape/radius_h", _radius_h, 7.0);
   n.param("ObstacleShape/z_l", _z_l, 7.0);
@@ -455,6 +473,11 @@ int main(int argc, char** argv) {
   n.param("wall_y2_begin", wall_y2_begin, 0.0);
   n.param("wall_x2_end", wall_x2_end, 0.0);
   n.param("wall_y2_end", wall_y2_end, 0.0);
+  
+  n.param("box1_x", box1_x, 0.0);
+  n.param("box1_y", box1_y, 0.0);
+  n.param("box2_x", box2_x, 0.0);
+  n.param("box2_y", box2_y, 0.0);
 
   // clearance for multi robots.
   _x_size -= 2.0;

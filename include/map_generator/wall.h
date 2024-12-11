@@ -78,6 +78,58 @@ Wall::Wall(double start_x, double start_y, double end_x, double end_y,
   _cloud.is_dense = true;
 }; // namespace dynamic_map_objects
 
+class Box {
+private:
+  double _x, _y;
+  double _w, _h;
+  double _resolution;
+
+public:
+  pcl::PointCloud<pcl::PointXYZ> _cloud;
+  Box(double _x, double _y,
+       double width = 0.6, double height = 2.0, double resolution = 0.1);
+  ~Box() = default;
+};
+
+Box::Box(double x, double y,
+           double width, double height, double resolution)
+    : _x(x), _y(y),
+      _w(width), _h(height), _resolution(resolution) {
+	std::cout << "get into the constructor of Box" << std::endl;
+  // define height and width
+  int heightNum = ceil(_h / _resolution);
+  int widNum = ceil(_w / _resolution);
+//   int lengthNum = ceil(length / _resolution);
+
+  // random point in grid scale
+  double mid_x = floor(_x / _resolution) * _resolution +
+                 _resolution / 2.0;
+  double mid_y = floor(_y / _resolution) * _resolution +
+                 _resolution / 2.0;
+
+  // generate point cloud
+  _cloud.points.resize(0);
+  _cloud.width = 0;
+  _cloud.height = 0;
+
+  pcl::PointXYZ pt;
+  // _cloud.points.push_back(pt);
+
+  // NOTE: x direction is length, y direction is width
+  for (int r = -widNum / 2.0; r < widNum / 2.0; r++)
+    for (int s = -widNum / 2.0; s < widNum / 2.0; s++) {
+      for (int t = -2.0; t < heightNum; t++) {
+        pt.x = mid_x + r * _resolution + 1e-2;
+        pt.y = mid_y + s * _resolution + 1e-2;
+        pt.z = (t + 0.5) * _resolution + 1e-2;
+        _cloud.points.push_back(pt);
+      }
+    }
+
+  _cloud.width = _cloud.points.size();
+  _cloud.height = 1;
+  _cloud.is_dense = true;
+}; // namespace dynamic_map_objects
 } // namespace static_env
 
 #endif // __MOVING_CYLINDER_H__

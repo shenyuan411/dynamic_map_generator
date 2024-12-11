@@ -2,9 +2,9 @@
 	<arg name="init_x" />
 	<arg name="init_y" />
 	<arg name="init_z" />
-	<arg name="obs_num" default="1" />
+	<arg name="obs_num" default="0" />
 	<arg name="map_size_x" default="7"/>
-	<arg name="map_size_y" default="8"/><!-- 减去2再除以2才是正负的速度反向的位置 -->
+	<arg name="map_size_y" default="6"/><!-- 减去2再除以2才是正负的速度反向的位置 -->
 	<arg name="map_size_z" default="3"/>
 	<arg name="c_num" />
 	<arg name="p_num" />
@@ -24,7 +24,7 @@
 
 	<!-- map -->
 	<!-- <node pkg ="map_generator" name ="map_generator" type ="dynamic_walker" output = "screen" launch-prefix="gdb -ex run -args"> -->
-	<node pkg ="map_generator" name ="map_generator" type ="dynamic_walker" output = "screen">
+	<node pkg ="map_generator" name ="map_generator" type ="dynamic_walker_realExp" output = "screen">
 		<remap from="~global_cloud" to="/map_generator/global_cloud" />
 		<remap from="~global_cylinder_state" to="/ground_truth_state" />
 		<param name="map/x_size" value="$(arg map_size_x)" />
@@ -35,7 +35,8 @@
 		<param name="map/test" value="false" />
 
 		<param name="ObstacleShape/seed" value="-1"/>
-		<param name="map/obs_num" value="3"/>
+		<param name="map/obs_num" value="$(arg obs_num)"/> 
+		<param name="map/box_num" value="1"/> <!-- 目前没啥用 -->
 		<!-- 改变障碍物体积 -->
 		<param name="ObstacleShape/lower_rad" value="0.5"/>
 		<param name="ObstacleShape/upper_rad" value="1.0"/>
@@ -44,7 +45,6 @@
 		<param name="ObstacleShape/upper_vel" value="0.6" />
 		<param name="ObstacleShape/set_cylinder" value="true"/>
 
-		<param name="map/circle_num" value="0"/>
 		<param name="ObstacleShape/radius_l" value="0.7"/>
 		<param name="ObstacleShape/radius_h" value="2.5"/>
 		<param name="ObstacleShape/z_l" value="0.8"/>
@@ -55,10 +55,10 @@
 		<param name="sensing/radius" value="10.0"/>
 		<param name="sensing/rate" value="20.0"/>
 		<param name="sensing/noiseLevel" value="0.05"/>
-		<param name="dyn_obj_cld_pub" value="true"/>
-		<param name="obs1x" value="-0.5"/>
+		<param name="dyn_obj_cld_pub" value="false"/>
+		<param name="obs1x" value="-3.6"/>
 		<param name="obs1y" value="0.0"/>
-		<param name="obs1w" value="0.5"/> <!-- 圆柱的宽度 -->
+		<param name="obs1w" value="0.6"/> <!-- 圆柱的宽度 -->
 		<param name="obs1h" value="1.8"/>
 		<param name="mode1" value="$(arg map_mode1)" />
 		<param name="given_vel1x" value="$(arg given_vel1x)"/>
@@ -86,7 +86,7 @@
 		<param name="given_vel5x" value="$(arg given_vel5x)"/>
 		<param name="given_vel5y" value="$(arg given_vel5y)"/>
 
-		<param name="wall_num" value="2"/>
+		<param name="wall_num" value="2"/><!-- 目前没啥用 -->
 		<!-- <param name="wall_x1_begin" value="-6.0"/> -->
 		<param name="wall_x1_begin" value="-5.5"/>
 		<param name="wall_y1_begin" value="2.5"/>
@@ -96,6 +96,11 @@
 		<param name="wall_y2_begin" value="-2.5"/>
 		<param name="wall_x2_end" value="4.0"/>
 		<param name="wall_y2_end" value="-2.5"/>
+
+		<param name="box1_x" value="-5.4"/>
+		<param name="box1_y" value="-0.9"/>
+		<param name="box2_x" value="-1.8"/>
+		<param name="box2_y" value="0.9"/>
 
 	</node>
 	
