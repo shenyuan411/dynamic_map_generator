@@ -509,6 +509,7 @@ int main(int argc, char** argv) {
   RandomMapGenerate();
 
   ros::Rate loop_rate(_sense_rate);
+  ROS_WARN_STREAM("_sense_rate: " << _sense_rate);
 
   while (ros::ok()) {
     // delete old cylinders in rviz
