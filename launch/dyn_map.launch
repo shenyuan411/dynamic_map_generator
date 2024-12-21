@@ -1,4 +1,3 @@
-<?xml version=1.0?>
 <launch>
     <!-- number of moving objects -->
     <arg name="obj_num" value="10" />
@@ -36,7 +35,7 @@
         <param name="ObstacleShape/omega" value="0.5"/>        
     
         <param name="sensing/radius" value="5.0"/>        
-        <param name="sensing/rate"   value="5.0"/>   
+        <param name="sensing/rate"   value="20.0"/>   
     </node>
 
     <!-- use simulator -->

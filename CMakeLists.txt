@@ -72,6 +72,11 @@ target_link_libraries(dynamic_walker_realExp
     ${catkin_LIBRARIES}
     ${PCL_LIBRARIES})
 
+add_executable(dynamic_walker_release src/dynamic_walker_release.cpp)
+target_link_libraries(dynamic_walker_release
+    ${catkin_LIBRARIES}
+    ${PCL_LIBRARIES})
+
 add_executable(click_map src/click_map.cpp)
 target_link_libraries(click_map
   ${catkin_LIBRARIES}

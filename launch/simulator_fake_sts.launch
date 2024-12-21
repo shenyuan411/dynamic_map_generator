@@ -4,7 +4,7 @@
 	<arg name="init_z" />
 	<arg name="obs_num" default="1" />
 	<arg name="map_size_x" default="7"/>
-	<arg name="map_size_y" default="8"/><!-- 减去2再除以2才是正负的速度反向的位置 -->
+	<arg name="map_size_y" default="6"/>
 	<arg name="map_size_z" default="3"/>
 	<arg name="c_num" />
 	<arg name="p_num" />
@@ -13,18 +13,24 @@
 	<arg name="odom_pose_topic" />
 	<arg name="drone_id" />
 	<arg name="map_mode1" default="2" /> <!-- 障碍物1的运动模式为只有y方向的速度-->
-	<arg name="given_vel1x" default="0.05"/>  <!-- 单位 * sensing/rate 才是标准的m/s  -->
-	<arg name="given_vel1y" default="0.05"/>  <!-- 单位很迷阿  -->
+	<arg name="given_vel1x" default="1.0"/>  <!-- 单位 是标准的m/s  -->
+	<arg name="given_vel1y" default="1.0"/>  
+	<arg name="map_mode2" default="3" /> <!-- 0表示都用，1表示y静止，2是x静止，3是直接静止-->
+	<arg name="given_vel2x" default="0.6"/> 
+	<arg name="given_vel2y" default="0.6"/>  
+	<arg name="map_mode3" default="3" /> <!-- 0表示都用，1表示y静止，2是x静止，3是直接静止-->
+	<arg name="given_vel3x" default="1.0"/>
+	<arg name="given_vel3y" default="1.0"/>  
 	<arg name="map_mode4" default="0" /> <!-- 障碍物4的运动模式为有x和y方向的速度-->
-	<arg name="given_vel4x" default="0.03"/>  <!-- 单位很迷阿  -->
-	<arg name="given_vel4y" default="0.03"/>  <!-- 单位很迷阿  -->
+	<arg name="given_vel4x" default="0.6"/>  
+	<arg name="given_vel4y" default="0.6"/> 
 	<arg name="map_mode5" default="1" /> <!-- 障碍物4的运动模式为有x和y方向的速度-->
-	<arg name="given_vel5x" default="0.04"/>
-	<arg name="given_vel5y" default="-0.02"/>
+	<arg name="given_vel5x" default="1.2"/>
+	<arg name="given_vel5y" default="-0.6"/>
 
 	<!-- map -->
 	<!-- <node pkg ="map_generator" name ="map_generator" type ="dynamic_walker" output = "screen" launch-prefix="gdb -ex run -args"> -->
-	<node pkg ="map_generator" name ="map_generator" type ="dynamic_walker" output = "screen">
+	<node pkg ="map_generator" name ="map_generator" type ="dynamic_walker_release" output = "screen">
 		<remap from="~global_cloud" to="/map_generator/global_cloud" />
 		<remap from="~global_cylinder_state" to="/ground_truth_state" />
 		<param name="map/x_size" value="$(arg map_size_x)" />
@@ -35,7 +41,6 @@
 		<param name="map/test" value="false" />
 
 		<param name="ObstacleShape/seed" value="-1"/>
-		<param name="map/obs_num" value="3"/>
 		<!-- 改变障碍物体积 -->
 		<param name="ObstacleShape/lower_rad" value="0.5"/>
 		<param name="ObstacleShape/upper_rad" value="1.0"/>
@@ -55,22 +60,45 @@
 		<param name="sensing/radius" value="10.0"/>
 		<param name="sensing/rate" value="20.0"/>
 		<param name="sensing/noiseLevel" value="0.05"/>
-		<param name="dyn_obj_cld_pub" value="true"/>
+		<param name="dyn_obj_cld_pub" value="false"/>
+		<param name="map/obs_num" value="3"/>
+
 		<param name="obs1x" value="-0.5"/>
 		<param name="obs1y" value="0.0"/>
-		<param name="obs1w" value="0.5"/> <!-- 圆柱的宽度 -->
+		<param name="obs1w" value="0.6"/> <!-- 圆柱的宽度 -->
 		<param name="obs1h" value="1.8"/>
 		<param name="mode1" value="$(arg map_mode1)" />
 		<param name="given_vel1x" value="$(arg given_vel1x)"/>
 		<param name="given_vel1y" value="$(arg given_vel1y)"/>
+		<param name="obs1x_l" value="-2.5"/>
+		<param name="obs1x_h" value="2.5"/>
+		<param name="obs1y_l" value="-2.0"/>
+		<param name="obs1y_h" value="2.0"/>
+
 		<param name="obs2x" value="-2.0"/>
 		<param name="obs2y" value="1.5"/>
 		<param name="obs2w" value="1.34"/>
 		<param name="obs2h" value="3.0"/>
+		<param name="mode2" value="$(arg map_mode2)" />
+		<param name="given_vel2x" value="$(arg given_vel2x)"/>
+		<param name="given_vel2y" value="$(arg given_vel2y)"/>
+		<param name="obs2x_l" value="-2.5"/>
+		<param name="obs2x_h" value="2.5"/>
+		<param name="obs2y_l" value="-2.0"/>
+		<param name="obs2y_h" value="2.0"/>
+
 		<param name="obs3x" value="1.0"/>
 		<param name="obs3y" value="-1.5"/>
 		<param name="obs3w" value="1.4"/>
 		<param name="obs3h" value="3.0"/>
+		<param name="mode3" value="$(arg map_mode3)" />
+		<param name="given_vel3x" value="$(arg given_vel3x)"/>
+		<param name="given_vel3y" value="$(arg given_vel3y)"/>
+		<param name="obs3x_l" value="-2.5"/>
+		<param name="obs3x_h" value="2.5"/>
+		<param name="obs3y_l" value="-2.0"/>
+		<param name="obs3y_h" value="2.0"/>
+
 		<param name="obs4x" value="-0.4"/>
 		<param name="obs4y" value="0.0"/>
 		<param name="obs4w" value="0.6"/>
@@ -78,6 +106,11 @@
 		<param name="mode4" value="$(arg map_mode4)" />
 		<param name="given_vel4x" value="$(arg given_vel4x)"/>
 		<param name="given_vel4y" value="$(arg given_vel4y)"/>
+		<param name="obs4x_l" value="-2.5"/>
+		<param name="obs4x_h" value="2.5"/>
+		<param name="obs4y_l" value="-2.0"/>
+		<param name="obs4y_h" value="2.0"/>
+
 		<param name="obs5x" value="1.0"/>
 		<param name="obs5y" value="0.0"/>
 		<param name="obs5w" value="0.7"/>
@@ -85,8 +118,13 @@
 		<param name="mode5" value="$(arg map_mode5)" />
 		<param name="given_vel5x" value="$(arg given_vel5x)"/>
 		<param name="given_vel5y" value="$(arg given_vel5y)"/>
+		<param name="obs5x_l" value="-2.5"/>
+		<param name="obs5x_h" value="2.5"/>
+		<param name="obs5y_l" value="-2.0"/>
+		<param name="obs5y_h" value="2.0"/>
 
-		<param name="wall_num" value="2"/>
+
+		<param name="map/wall_num" value="2"/>
 		<!-- <param name="wall_x1_begin" value="-6.0"/> -->
 		<param name="wall_x1_begin" value="-5.5"/>
 		<param name="wall_y1_begin" value="2.5"/>
@@ -96,6 +134,8 @@
 		<param name="wall_y2_begin" value="-2.5"/>
 		<param name="wall_x2_end" value="4.0"/>
 		<param name="wall_y2_end" value="-2.5"/>
+
+		<param name="map/box_num" value="0"/>
 
 	</node>
 	
