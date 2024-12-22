@@ -42,10 +42,10 @@ target_link_libraries(random_env
   ${PCL_LIBRARIES})
 
 
-add_executable(random_forest src/random_forest_sensing.cpp)
-target_link_libraries(random_forest
-  ${catkin_LIBRARIES}
-  ${PCL_LIBRARIES})
+# add_executable(random_forest src/random_forest_sensing.cpp)
+# target_link_libraries(random_forest
+#   ${catkin_LIBRARIES}
+#   ${PCL_LIBRARIES})
 
 add_executable(dynamic_forest src/dynamic_forest_sensing.cpp)
 target_link_libraries(dynamic_forest
@@ -57,15 +57,15 @@ target_link_libraries(dynamic_forest_seq
     ${catkin_LIBRARIES}
     ${PCL_LIBRARIES})
   
-add_executable(dynamic_walker src/dynamic_walker.cpp)
-target_link_libraries(dynamic_walker
-    ${catkin_LIBRARIES}
-    ${PCL_LIBRARIES})
+# add_executable(dynamic_walker src/dynamic_walker.cpp)
+# target_link_libraries(dynamic_walker
+#     ${catkin_LIBRARIES}
+#     ${PCL_LIBRARIES})
   
-add_executable(dynamic_walker2_bigHouse src/dynamic_walker2_bigHouse.cpp)
-target_link_libraries(dynamic_walker2_bigHouse
-    ${catkin_LIBRARIES}
-    ${PCL_LIBRARIES})
+# add_executable(dynamic_walker2_bigHouse src/dynamic_walker2_bigHouse.cpp)
+# target_link_libraries(dynamic_walker2_bigHouse
+#     ${catkin_LIBRARIES}
+#     ${PCL_LIBRARIES})
 
 add_executable(dynamic_walker_realExp src/dynamic_walker_realExp.cpp)
 target_link_libraries(dynamic_walker_realExp
@@ -77,19 +77,19 @@ target_link_libraries(dynamic_walker_release
     ${catkin_LIBRARIES}
     ${PCL_LIBRARIES})
 
-add_executable(click_map src/click_map.cpp)
-target_link_libraries(click_map
-  ${catkin_LIBRARIES}
-  ${PCL_LIBRARIES})
+# add_executable(click_map src/click_map.cpp)
+# target_link_libraries(click_map
+#   ${catkin_LIBRARIES}
+#   ${PCL_LIBRARIES})
 
 add_executable(read_pcd src/read_pcd.cpp)
 target_link_libraries(read_pcd ${catkin_LIBRARIES})
 
-install(TARGETS random_forest click_map
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
-)
+# install(TARGETS random_forest click_map
+#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+# )
 
 install(DIRECTORY launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
