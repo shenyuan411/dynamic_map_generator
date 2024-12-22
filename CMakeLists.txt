@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(map_generator)
+project(dyn_map_generator)
 
 # set(CMAKE_BUILD_TYPE "Debug")
 set(CMAKE_BUILD_TYPE "Release")

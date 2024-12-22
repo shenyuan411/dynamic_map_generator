@@ -9,7 +9,7 @@
     <arg name="odom_topic" value="visual_slam/odom" />
     
     <!-- map -->
-    <node pkg ="map_generator" name ="map_generator" type ="random_env" output = "screen">
+    <node pkg ="dyn_map_generator" name ="map_generator" type ="random_env" output = "screen">
         <param name="sensing/rate"   value="10.0"/>   
         <param name="map/x_size"     value="$(arg map_size_x)" />
         <param name="map/y_size"     value="$(arg map_size_y)" />
@@ -52,6 +52,6 @@
         <arg name="odometry_topic" value="$(arg odom_topic)" />
     </include> -->
 
-    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find map_generator)/launch/default.rviz" required="true" />
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find dyn_map_generator)/launch/default.rviz" required="true" />
       
 </launch>

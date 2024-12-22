@@ -29,8 +29,8 @@
 	<arg name="given_vel5y" default="-0.6"/>
 
 	<!-- map -->
-	<!-- <node pkg ="map_generator" name ="map_generator" type ="dynamic_walker" output = "screen" launch-prefix="gdb -ex run -args"> -->
-	<node pkg ="map_generator" name ="map_generator" type ="dynamic_walker_release" output = "screen">
+	<!-- <node pkg ="dyn_map_generator" name ="map_generator" type ="dynamic_walker" output = "screen" launch-prefix="gdb -ex run -args"> -->
+	<node pkg ="dyn_map_generator" name ="map_generator" type ="dynamic_walker_release" output = "screen">
 		<remap from="~global_cloud" to="/map_generator/global_cloud" />
 		<remap from="~global_cylinder_state" to="/ground_truth_state" />
 		<param name="map/x_size" value="$(arg map_size_x)" />
