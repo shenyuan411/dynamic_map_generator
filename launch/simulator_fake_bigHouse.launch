@@ -63,7 +63,7 @@
 		<param name="sensing/noiseLevel" value="0.05"/>
 		<!-- <param name="load_pcd_file" value="false"/> -->
 		<param name="load_pcd_file" value="true"/>
-		<param name="file_path" value="/home/nros/bigHouse2.pcd"/>
+		<param name="file_path" value="/pcdmap/bigHouse2.pcd"/>
 		<param name="dyn_obj_cld_pub" value="false"/>
 		<!-- <param name="dyn_obj_cld_pub" value="true"/> -->
 		<param name="map/obs_num" value="5"/>

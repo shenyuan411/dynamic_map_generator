@@ -34,6 +34,7 @@
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <visualization_msgs/MarkerArray.h>
+#include <ros/package.h>
 
 // for dynamic obstacles
 #include <Eigen/Eigen>
@@ -332,7 +333,8 @@ void pubSensedPoints() {
 
   pcl::PointCloud<pcl::PointXYZ> cloud_all;
 
-  if (_load_pcd_file) pcl::io::loadPCDFile(_pcd_file_path,cloud_all);//通过launch文件修改路径, 表示从文件中读取
+//   std::cout << ros::package::getPath("dyn_map_generator") << std::endl;
+  if (_load_pcd_file) pcl::io::loadPCDFile(ros::package::getPath("dyn_map_generator")+_pcd_file_path,cloud_all);//通过launch文件修改路径, 表示从文件中读取
 
   if (!_dyn_cylinders.empty()) {
 	for (auto& dyn_cld : _dyn_cylinders) {
